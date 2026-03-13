@@ -1,256 +1,299 @@
-# @superinstance/starter-agent
+# SuperInstance Starter Agent
 
-> **Minimal Origin-Centric Agent with Modular Equipment System**
+> A minimal agent framework with origin-centric computation and modular equipment system
 
-A self-optimizing agent that operates within the SuperInstance spreadsheet paradigm. The agent starts minimal and equips only what it needs, removing equipment once "muscle memory" (triggers) are established.
+## Overview
 
-[![npm version](https://badge.fury.io/js/%40superinstance%2Fstarter-agent.svg)](https://www.npmjs.com/package/@superinstance/starter-agent)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
+The SuperInstance Starter Agent is designed around a revolutionary paradigm: **agents start minimal and self-equip what they need**. Built on the mathematical foundations of Origin-Centric Data Systems and Tile Algebra, this framework enables:
 
-## Core Concepts
-
-### Origin-Centric Computation
-
-Based on the mathematical framework from [Origin-Centric Data Systems](https://github.com/SuperInstance/SuperInstance-papers/tree/main/papers/01-origin-centric-data-systems):
-
-```
-Origin Node o_i = (id, R, S, H)
-
-Where:
-- id = unique identifier
-- R  = local reference frame
-- S  = local state (provenance, data, transformations)
-- H  = history of received information
-
-Key Theorem: Convergence in O(log n) without global state coordination.
-```
-
-### Equipment System
-
-The agent has 6 equipment slots, each representing a capability domain:
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    EQUIPMENT SLOTS                               │
-│                                                                  │
-│  [MEMORY]     [REASONING]     [CONSENSUS]     [SPREADSHEET]     │
-│      │            │               │               │              │
-│      ▼            ▼               ▼               ▼              │
-│  Hierarchical  Escalation    Tripartite      POLLN              │
-│  Memory        Engine        Consensus       Interface          │
-│                                                                  │
-│  [DISTILLATION]              [PERCEPTION]                       │
-│       │                          │                               │
-│       ▼                          ▼                               │
-│  Model Distiller            Text/Vision Processor               │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### Self-Optimization
-
-When an agent "matures into its cell":
-
-1. **Equipment Used** → Extract triggers (muscle memory)
-2. **Triggers Register** → Deadband controllers
-3. **Equipment Removed** → Streamlined performance
-4. **Triggers Call Teacher** → When outside deadband range
+- **Origin-Centric Computation**: Every operation tracks its provenance chain
+- **Modular Equipment**: Dynamically equip/unequip capabilities as needed
+- **Self-Optimization**: Agents streamline themselves by extracting "muscle memory" triggers
+- **Spreadsheet Integration**: Logic decomposes into tile-based cells for visualization
 
 ## Installation
 
 ```bash
 npm install @superinstance/starter-agent
-# or
-bun add @superinstance/starter-agent
 ```
 
 ## Quick Start
 
 ```typescript
-import { SuperInstanceAgent } from '@superinstance/starter-agent';
+import { OriginCore } from '@superinstance/starter-agent';
 
-// Create minimal agent
-const agent = new SuperInstanceAgent({ debug: true });
-
-// Register available equipment
-agent.registerDefaultEquipment();
-
-// Process a task - agent auto-equips what it needs
-const result = await agent.processTask({
-  id: 'task_1',
-  type: 'decision',
-  query: 'Should I approve this $10,000 budget request?',
-  stakes: 0.8,        // High stakes
-  urgencyMs: 5000,    // 5 second deadline
+// Create a minimal agent
+const agent = new OriginCore({
+  id: 'my-agent',
+  debug: true,
 });
 
-console.log(result.output);
-// { tier: 'human', reason: 'High stakes threshold exceeded' }
+// Register available equipment
+import { HierarchicalMemoryEquipment } from '@superinstance/equipment-memory-hierarchy';
+import { EscalationEngineEquipment } from '@superinstance/equipment-escalation-router';
 
-console.log(`Confidence: ${result.confidence}`);
-// Confidence: 0.5
+agent.registerEquipment(new HierarchicalMemoryEquipment());
+agent.registerEquipment(new EscalationEngineEquipment());
 
-console.log(`Equipment used: ${result.equipmentUsed.join(', ')}`);
-// Equipment used: REASONING, CONSENSUS
+// Process a task - agent self-equips what it needs
+const result = await agent.processTask({
+  id: 'task-1',
+  type: 'decision',
+  query: 'Should I approve this high-stakes request?',
+  stakes: 0.9,
+  urgencyMs: 5000,
+});
 
-// Check what's equipped
-console.log(agent.getStatus());
-// { id: 'origin_...', equipment: [...], confidence: 0.85, recommendations: [] }
-
-// Optimize (remove unused equipment)
-await agent.streamline();
+console.log(result);
+// {
+//   taskId: 'task-1',
+//   output: { decision: '...', confidence: 0.85 },
+//   confidence: 0.85,
+//   zone: 'GREEN',
+//   equipmentUsed: ['REASONING', 'CONSENSUS'],
+//   ...
+// }
 ```
 
-## Equipment Modules
+## Core Concepts
 
-### Core Equipment (Always Available)
+### Origin-Centric Computation
 
-| Equipment | Slot | Description |
-|-----------|------|-------------|
-| **HierarchicalMemory** | MEMORY | 4-tier cognitive memory (Working, Episodic, Semantic, Procedural) |
-| **EscalationEngine** | REASONING | Bot→Brain→Human routing (40x cost reduction) |
-| **TripartiteConsensus** | CONSENSUS | 3-agent deliberation (Pathos, Logos, Ethos) |
-| **POLLNInterface** | SPREADSHEET | Tile-based spreadsheet visualization |
-
-### Equipment Lifecycle
+Every agent maintains an **Origin State** that tracks:
 
 ```typescript
-// Register custom equipment
-import { Equipment, EquipmentSlot } from '@superinstance/starter-agent';
-
-class MyCustomEquipment implements Equipment {
-  name = 'MyCustom';
-  slot: EquipmentSlot = 'MEMORY';
-  version = '1.0.0';
-  // ... implement interface
-}
-
-agent.registerEquipment(new MyCustomEquipment());
-
-// Manually equip
-await agent.equipEquipment('MyCustom');
-
-// Manually unequip
-await agent.unequipEquipment('MEMORY');
-
-// Auto-optimize
-await agent.streamline();
-```
-
-## Confidence Zones
-
-Following [Tile Algebra Formalization](https://github.com/SuperInstance/SuperInstance-papers/blob/main/white-papers/06-Tile-Algebra-Formalization.md):
-
-```
-           GREEN ZONE (0.9 - 1.0)
-           │    High confidence
-           │    Auto-process
-           │    No escalation
-           │
-           ├───────────────────────
-           │
-           YELLOW ZONE (0.6 - 0.9)
-           │    Medium confidence  
-           │    Flag for review
-           │    Consider equipping
-           │
-           ├───────────────────────
-           │
-           RED ZONE (0.0 - 0.6)
-           │    Low confidence
-           │    Request input
-           │    Call teacher
-           │    Equip new equipment
-           │
-           ▼
-```
-
-## Spreadsheet Integration
-
-The agent operates within the POLLN spreadsheet paradigm. Each "cell" decomposes into Named Tiles:
-
-```
-┌─────────────────────────────────────────────────────────┐
-│                    AGENT CELL                           │
-├─────────────────────────────────────────────────────────┤
-│                                                         │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  │
-│  │ DATA ORIGIN  │  │   DECISION   │  │TRANSFORMATION│  │
-│  │     TILE     │  │   LOGIC TILE │  │     TILE     │  │
-│  └──────────────┘  └──────────────┘  └──────────────┘  │
-│                                                         │
-│  ┌──────────────┐  ┌──────────────────────────────────┐│
-│  │ CONFIDENCE   │  │      NAMED INTERFACE TILE        ││
-│  │    TILE      │  │  Why I exist / What I provide    ││
-│  └──────────────┘  └──────────────────────────────────┘│
-└─────────────────────────────────────────────────────────┘
-```
-
-## API Reference
-
-### SuperInstanceAgent
-
-```typescript
-const agent = new SuperInstanceAgent(config?: AgentConfig);
-
-// Task processing
-await agent.processTask(task: Task): Promise<TaskResult>
-await agent.ask(query: string, options?: Partial<Task>): Promise<string>
-
-// Equipment management
-agent.registerEquipment(equipment: Equipment): void
-agent.registerDefaultEquipment(): void
-await agent.equipEquipment(name: string): Promise<boolean>
-await agent.unequipEquipment(slot: EquipmentSlot): Promise<boolean>
-
-// Optimization
-await agent.streamline(): Promise<void>
-await agent.reset(): Promise<void>
-
-// Status
-agent.getStatus(): AgentStatus
-agent.getEquippedEquipment(): { slot: EquipmentSlot; name: string }[]
-```
-
-### Task
-
-```typescript
-interface Task {
-  id: string;
-  type: 'decision' | 'analysis' | 'generation' | 'distillation' | 'coordination' | 'learning' | 'visualization';
-  query: string;
-  context?: Record<string, any>;
-  stakes?: number;        // 0-1, importance
-  urgencyMs?: number;     // Time constraint
-  requiredCapabilities?: EquipmentSlot[];
+interface OriginState {
+  origin: ProvenanceChain;    // Immutable history
+  data: DataType;             // Current data state
+  transformations: Transformation[];  // Applied operations
+  function: () => unknown;    // Current capability
 }
 ```
 
-### TaskResult
+### Equipment System
+
+The agent has 10 equipment slots:
+
+| Slot | Purpose | Example Equipment |
+|------|---------|-------------------|
+| MEMORY | State persistence | HierarchicalMemory |
+| REASONING | Decision routing | EscalationEngine |
+| CONSENSUS | Multi-agent agreement | TripartiteConsensus |
+| SPREADSHEET | Logic visualization | POLLNInterface |
+| DISTILLATION | Model compression | CellLogicDistiller |
+| PERCEPTION | Input processing | VisionProcessor |
+| COORDINATION | Multi-agent orchestration | SwarmCoordinator |
+| COMMUNICATION | Message passing | MessageRouter |
+| SELF_IMPROVEMENT | Self-modification | SelfImprovement |
+| MONITORING | Real-time visibility | MonitoringDashboard |
+
+### Confidence Zones
+
+```
+GREEN (0.9 - 1.0): High confidence, auto-process
+YELLOW (0.6 - 0.9): Medium confidence, flag for review  
+RED (0.0 - 0.6): Low confidence, call teacher
+```
+
+### Self-Optimization
+
+Agents can unequip unused equipment while extracting "muscle memory":
 
 ```typescript
-interface TaskResult {
-  taskId: string;
-  output: any;
-  confidence: number;
-  zone: 'GREEN' | 'YELLOW' | 'RED';
-  equipmentUsed: EquipmentSlot[];
-  processingTimeMs: number;
-  provenance: ProvenanceChain;
-  calledTeacher: boolean;
-}
+// Optimize by unequipping low-usage equipment
+await agent.optimize();
+
+// Triggers are extracted for when to re-equip or call teacher
+console.log(agent.triggers.monitors);
+```
+
+## Equipment Packages
+
+Install equipment modules individually:
+
+```bash
+# Memory
+npm install @superinstance/equipment-memory-hierarchy
+
+# Reasoning
+npm install @superinstance/equipment-escalation-router
+
+# Consensus
+npm install @superinstance/equipment-consensus-engine
+
+# Distillation
+npm install @superinstance/equipment-cell-logic-distiller
+
+# Monitoring
+npm install @superinstance/equipment-monitoring-dashboard
+
+# And more...
 ```
 
 ## Architecture
 
-See [ARCHITECTURE.md](./ARCHITECTURE.md) for full design documentation.
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     SUPERINSTANCE STARTER AGENT                 │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ┌───────────────────────────────────────────────────────────┐ │
+│  │                    ORIGIN CORE (Minimal)                   │ │
+│  │  • Identity (id, reference frame, state)                  │ │
+│  │  • Provenance Chain (immutable, append-only)              │ │
+│  │  • Rate-Based State (dD/dt, dT/dt, dΦ/dt)                 │ │
+│  └───────────────────────────────────────────────────────────┘ │
+│                              │                                  │
+│                              ▼                                  │
+│  ┌───────────────────────────────────────────────────────────┐ │
+│  │                    EQUIPMENT SLOTS                         │ │
+│  │                                                            │ │
+│  │  [MEMORY] [REASONING] [CONSENSUS] [SPREADSHEET]           │ │
+│  │  [DISTILLATION] [PERCEPTION] [COORDINATION] ...           │ │
+│  └───────────────────────────────────────────────────────────┘ │
+│                              │                                  │
+│                              ▼                                  │
+│  ┌───────────────────────────────────────────────────────────┐ │
+│  │                    TRIGGER SYSTEM                          │ │
+│  │  • Threshold Monitors  • Deadband Controllers              │ │
+│  │  • Equipment Recommendations                               │ │
+│  └───────────────────────────────────────────────────────────┘ │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
 
-## Related Projects
+## API Reference
 
-- [**SuperInstance-SDK1**](https://github.com/SuperInstance/SuperInstance-SDK1) - Core agent library
-- [**POLLN**](https://github.com/SuperInstance/POLLN) - Spreadsheet platform
-- [**SuperInstance-papers**](https://github.com/SuperInstance/SuperInstance-papers) - Research papers
+### OriginCore
+
+```typescript
+class OriginCore {
+  constructor(config?: AgentConfig);
+  
+  // Equipment
+  registerEquipment(equipment: Equipment): void;
+  equip(equipmentName: string): Promise<boolean>;
+  unequipSlot(slot: EquipmentSlot): Promise<boolean>;
+  hasEquipment(slot: EquipmentSlot): boolean;
+  getEquippedEquipment(): { slot: EquipmentSlot; name: string }[];
+  
+  // Tasks
+  processTask(task: Task): Promise<TaskResult>;
+  
+  // Optimization
+  optimize(): Promise<void>;
+  
+  // State
+  getState(): AgentState;
+  reset(): Promise<void>;
+}
+```
+
+### Equipment Interface
+
+```typescript
+interface Equipment {
+  readonly name: string;
+  readonly slot: EquipmentSlot;
+  readonly version: string;
+  readonly description: string;
+  readonly cost: CostMetrics;
+  readonly benefit: BenefitMetrics;
+  readonly triggerThresholds: TriggerThresholds;
+  
+  equip(agent: OriginCore): Promise<void>;
+  unequip(agent: OriginCore): Promise<void>;
+  asTile(): Tile;
+  describe(): EquipmentDescription;
+}
+```
+
+## Creating Custom Equipment
+
+Extend `BaseEquipment` to create custom equipment:
+
+```typescript
+import { BaseEquipment, OriginCore, Tile } from '@superinstance/starter-agent';
+
+export class MyCustomEquipment extends BaseEquipment {
+  readonly name = 'MyCustomEquipment';
+  readonly slot = 'REASONING';
+  readonly version = '1.0.0';
+  readonly description = 'Custom reasoning equipment';
+  
+  readonly cost = {
+    memoryBytes: 1_000_000,
+    cpuPercent: 5,
+    latencyMs: 10,
+    costPerUse: 0,
+  };
+  
+  readonly benefit = {
+    accuracyBoost: 0.1,
+    speedMultiplier: 1.5,
+    confidenceBoost: 0.2,
+    capabilityGain: ['custom_reasoning'],
+  };
+  
+  readonly triggerThresholds = {
+    equipWhen: [{ metric: 'complexity', operator: '>', value: 0.5 }],
+    unequipWhen: [],
+    callTeacher: { low: 0.3, high: 0.7 },
+  };
+  
+  asTile(): Tile {
+    return {
+      inputType: { type: 'primitive', name: 'string' },
+      outputType: { type: 'primitive', name: 'string' },
+      compute: (input) => this.process(input),
+      confidence: () => 0.8,
+      trace: () => 'MyCustomEquipment.process',
+    };
+  }
+  
+  private process(input: unknown): unknown {
+    // Custom logic here
+    return input;
+  }
+}
+```
+
+## Spreadsheet Integration
+
+Agents integrate with the SuperInstance spreadsheet system:
+
+```typescript
+import { POLLNInterfaceEquipment } from '@superinstance/equipment-cell-logic-distiller';
+
+agent.registerEquipment(new POLLNInterfaceEquipment());
+await agent.equip('POLLNInterface');
+
+// Decompose logic into tiles
+const tiles = agent.tiles.get('POLLNInterface').compute({
+  operation: 'decompose',
+  data: { /* cell data */ }
+});
+```
+
+## Hardware Scaling
+
+Use the Hardware Scaler equipment for automatic resource adaptation:
+
+```typescript
+import { HardwareScalerEquipment } from '@superinstance/equipment-hardware-scaler';
+
+agent.registerEquipment(new HardwareScalerEquipment({
+  cloudEndpoint: 'https://api.superinstance.io/v1/llm',
+  maxLocalMemory: 1024 * 1024 * 1024, // 1GB
+}));
+```
 
 ## License
 
-MIT © SuperInstance
+MIT
+
+## Links
+
+- [Documentation](https://superinstance.io/docs/starter-agent)
+- [Equipment Registry](https://github.com/SuperInstance?q=Equipment-)
+- [Examples](https://github.com/SuperInstance/SuperInstance-Starter-Agent/tree/main/examples)
