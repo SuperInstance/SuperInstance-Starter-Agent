@@ -1,166 +1,102 @@
 /**
- * SuperInstance Starter Agent - Core Types
+ * Core Types for SuperInstance Starter Agent
  * 
  * Based on Origin-Centric Data Systems and Tile Algebra formalization
  */
 
 // ============================================
-// Origin-Centric Types (from OCDS paper)
+// Origin-Centric Types
 // ============================================
 
-/**
- * An origin node is a computational unit characterized by:
- * - Unique identifier
- * - Local reference frame
- * - Local state
- * - History of received information
- */
-export interface OriginNode {
-  id: string;
-  referenceFrame: ReferenceFrame;
-  state: OriginState;
-  history: InformationHistory;
-}
-
-/**
- * Reference frame transformation from node i to node j
- * R_{i→j} = T_{i→j} · R_j
- */
 export interface ReferenceFrame {
-  type: 'local' | 'relative' | 'global';
-  transformation?: TransformationMatrix;
-  parent?: string;  // Parent origin ID
+  type: 'local' | 'global' | 'relative';
+  parentId?: string;
+  transform?: CoordinateTransform;
 }
 
-/**
- * Origin-centric state at node i
- * S_i = (O_i, D_i, T_i, Φ_i)
- */
-export interface OriginState {
-  origin: ProvenanceChain;      // O_i - provenance chain
-  data: DataPayload;             // D_i - data payload
-  transformations: Transform[];  // T_i* - transformation history
-  function: StateFunction;       // Φ_i - functional relationship
+export interface CoordinateTransform {
+  rotation?: number;
+  scale?: number;
+  translation?: [number, number];
 }
 
-/**
- * Provenance chain - immutable, append-only
- * O = (o_0, t_1, o_1, t_2, ..., t_n, o_n)
- */
+export interface ProvenanceEntry {
+  originId: string;
+  transformation: Transformation;
+  timestamp: number;
+}
+
 export interface ProvenanceChain {
   entries: ProvenanceEntry[];
   immutable: true;
 }
 
-export interface ProvenanceEntry {
-  originId: string;
-  transformation: Transform;
-  timestamp: number;
-  signature?: string;
+export interface OriginState {
+  origin: ProvenanceChain;
+  data: DataType;
+  transformations: Transformation[];
+  function: () => unknown;
 }
 
-/**
- * Rate-based update
- * Δ_i = (dD_i/dt, dT_i/dt, dΦ_i/dt)
- */
+export interface Transformation {
+  id: string;
+  type: string;
+  input: unknown;
+  output: unknown;
+  timestamp: number;
+}
+
+export interface DataType {
+  type: 'empty' | 'primitive' | 'composite' | 'reference';
+  value: unknown;
+  schema?: Schema;
+}
+
+export interface Schema {
+  type: string;
+  properties?: Record<string, Schema>;
+  items?: Schema;
+}
+
 export interface RateBasedUpdate {
-  dataRate: number;       // dD/dt
-  transformRate: number;  // dT/dt
-  functionRate: number;   // dΦ/dt
+  dataRate: number;      // dD/dt
+  transformRate: number; // dT/dt
+  functionRate: number;  // dΦ/dt
   lastUpdate: number;
 }
 
 // ============================================
-// Tile Algebra Types (from Tile Algebra paper)
+// History Types
 // ============================================
 
-/**
- * A tile is a typed computational unit with explicit confidence tracking
- * Tile T = (I, O, f, c, τ)
- */
-export interface Tile<I = any, O = any> {
-  inputType: TypeSchema;
-  outputType: TypeSchema;
-  compute: ComputeFunction<I, O>;
-  confidence: ConfidenceFunction<I>;
-  trace: TraceFunction<I>;
+export interface HistoryEntry {
+  timestamp: number;
+  type: 'input' | 'output' | 'equipment_change' | 'optimization' | 'error';
+  data: Record<string, unknown>;
+  confidence: number;
+  source: string;
 }
 
-export type TypeSchema = 
-  | { type: 'primitive'; name: 'number' | 'string' | 'boolean' | 'null' }
-  | { type: 'array'; element: TypeSchema }
-  | { type: 'object'; properties: Record<string, TypeSchema> }
-  | { type: 'union'; members: TypeSchema[] }
-  | { type: 'tile'; tileId: string };
-
-export type ComputeFunction<I, O> = (input: I) => O;
-export type ConfidenceFunction<I> = (input: I) => number;
-export type TraceFunction<I> = (input: I) => string;
-
-/**
- * Confidence zones from Tile Algebra
- */
-export type ConfidenceZone = 'GREEN' | 'YELLOW' | 'RED';
-
-export function getConfidenceZone(confidence: number): ConfidenceZone {
-  if (confidence >= 0.9) return 'GREEN';
-  if (confidence >= 0.6) return 'YELLOW';
-  return 'RED';
-}
-
-/**
- * Tile composition operators
- */
-export interface TileComposition {
-  type: 'sequential' | 'parallel' | 'conditional';
-  tiles: Tile[];
-  predicate?: (input: any) => boolean;  // For conditional
+export interface InformationHistory {
+  entries: HistoryEntry[];
+  maxSize: number;
 }
 
 // ============================================
-// Equipment System Types
+// Equipment Types
 // ============================================
 
-/**
- * Equipment slots represent capability domains
- */
 export type EquipmentSlot = 
-  | 'MEMORY'
-  | 'REASONING'
-  | 'CONSENSUS'
-  | 'SPREADSHEET'
-  | 'DISTILLATION'
+  | 'MEMORY' 
+  | 'REASONING' 
+  | 'CONSENSUS' 
+  | 'SPREADSHEET' 
+  | 'DISTILLATION' 
   | 'PERCEPTION'
+  | 'COORDINATION'
   | 'COMMUNICATION'
-  | 'COORDINATION';
-
-/**
- * Equipment interface - all equipment must implement this
- */
-export interface Equipment {
-  // Identity
-  readonly name: string;
-  readonly slot: EquipmentSlot;
-  readonly version: string;
-  readonly description: string;
-  
-  // Lifecycle
-  equip(agent: OriginCore): Promise<void>;
-  unequip(agent: OriginCore): Promise<void>;
-  
-  // Performance metrics
-  readonly cost: CostMetrics;
-  readonly benefit: BenefitMetrics;
-  
-  // Trigger thresholds
-  readonly triggerThresholds: TriggerThresholds;
-  
-  // Self-description
-  describe(): EquipmentDescription;
-  
-  // Tile interface (equipment IS a tile)
-  asTile(): Tile;
-}
+  | 'SELF_IMPROVEMENT'
+  | 'MONITORING';
 
 export interface CostMetrics {
   memoryBytes: number;
@@ -176,22 +112,31 @@ export interface BenefitMetrics {
   capabilityGain: string[];
 }
 
-export interface TriggerThresholds {
-  equipWhen: Condition[];
-  unequipWhen: Condition[];
-  callTeacher: DeadbandRange;
-}
-
-export interface Condition {
-  metric: 'confidence' | 'load' | 'complexity' | 'memory' | 'error_rate';
-  operator: '<' | '<=' | '>' | '>=' | '==' | '!=';
+export interface TriggerCondition {
+  metric: string;
+  operator: '<' | '>' | '<=' | '>=' | '==' | '!=';
   value: number;
 }
 
-export interface DeadbandRange {
-  low: number;
-  high: number;
-  teacherEndpoint?: string;
+export interface TriggerThresholds {
+  equipWhen: TriggerCondition[];
+  unequipWhen: TriggerCondition[];
+  callTeacher: { low: number; high: number };
+}
+
+export interface Equipment {
+  readonly name: string;
+  readonly slot: EquipmentSlot;
+  readonly version: string;
+  readonly description: string;
+  readonly cost: CostMetrics;
+  readonly benefit: BenefitMetrics;
+  readonly triggerThresholds: TriggerThresholds;
+  
+  equip(agent: OriginCore): Promise<void>;
+  unequip(agent: OriginCore): Promise<void>;
+  asTile(): Tile;
+  describe(): EquipmentDescription;
 }
 
 export interface EquipmentDescription {
@@ -201,78 +146,93 @@ export interface EquipmentDescription {
   whenToUse: string[];
   whenToRemove: string[];
   dependencies: EquipmentSlot[];
-  conflicts: string[];
+  conflicts: EquipmentSlot[];
 }
 
 // ============================================
-// Origin Core Types
+// Tile Types
 // ============================================
 
-/**
- * The minimal agent core - an Origin Node with Equipment Registry
- */
-export interface OriginCore {
-  // From OriginNode
-  id: string;
-  referenceFrame: ReferenceFrame;
-  state: OriginState;
-  history: InformationHistory;
-  
-  // Rate-based updates
-  rates: RateBasedUpdate;
-  
-  // Equipment system
-  equipment: Map<EquipmentSlot, Equipment>;
-  availableEquipment: Map<string, Equipment>;
-  triggers: TriggerRegistry;
-  
-  // Spreadsheet integration
-  cellPosition?: CellPosition;
+export interface TileType {
+  type: 'primitive' | 'composite' | 'union' | 'array';
+  name?: string;
+  properties?: Record<string, TileType>;
+  members?: TileType[];
+  element?: TileType;
+}
+
+export interface Tile {
+  inputType: TileType;
+  outputType: TileType;
+  compute: (input: unknown) => unknown;
+  confidence: (input: unknown) => number;
+  trace: (input: unknown) => string;
+}
+
+export interface TileGrid {
   tiles: Map<string, Tile>;
+  dimensions: [number, number];
+  origin: string;
 }
 
-export interface InformationHistory {
-  entries: HistoryEntry[];
-  maxSize: number;
+// ============================================
+// Task Types
+// ============================================
+
+export type TaskType = 
+  | 'decision' 
+  | 'analysis' 
+  | 'generation' 
+  | 'distillation' 
+  | 'coordination' 
+  | 'learning'
+  | 'visualization'
+  | 'monitoring'
+  | 'improvement';
+
+export interface Task {
+  id: string;
+  type: TaskType;
+  query: string;
+  context?: Record<string, unknown>;
+  stakes?: number;
+  urgencyMs?: number;
+  requiredCapabilities?: EquipmentSlot[];
+  metadata?: Record<string, unknown>;
 }
 
-export interface HistoryEntry {
-  timestamp: number;
-  type: 'input' | 'output' | 'transformation' | 'equipment_change';
-  data: any;
+export interface TaskResult {
+  taskId: string;
+  output: unknown;
   confidence: number;
-  source: string;
+  zone: ConfidenceZone;
+  equipmentUsed: EquipmentSlot[];
+  processingTimeMs: number;
+  provenance: ProvenanceChain;
+  calledTeacher: boolean;
 }
 
-export interface CellPosition {
-  sheet: string;
-  row: number;
-  column: string;
-  range?: string;
+// ============================================
+// Confidence Types
+// ============================================
+
+export type ConfidenceZone = 'GREEN' | 'YELLOW' | 'RED';
+
+export function getConfidenceZone(confidence: number): ConfidenceZone {
+  if (confidence >= 0.9) return 'GREEN';
+  if (confidence >= 0.6) return 'YELLOW';
+  return 'RED';
 }
 
 // ============================================
 // Trigger System Types
 // ============================================
 
-export interface TriggerRegistry {
-  thresholds: ThresholdConfig;
-  monitors: TriggerMonitor[];
-  recommendations: EquipmentRecommendation[];
-}
-
-export interface ThresholdConfig {
-  confidence: { low: number; high: number };
-  load: { low: number; high: number };
-  complexity: { low: number; high: number };
-  memory: { low: number; high: number };
-}
-
-export interface TriggerMonitor {
+export interface ThresholdMonitor {
   metric: string;
   currentValue: number;
   threshold: number;
-  action: 'equip' | 'unequip' | 'call_teacher' | 'alert';
+  action: 'call_teacher' | 'equip' | 'unequip' | 'alert';
   equipment?: string;
 }
 
@@ -284,107 +244,103 @@ export interface EquipmentRecommendation {
   autoEquip: boolean;
 }
 
-// ============================================
-// Task Processing Types
-// ============================================
-
-export interface Task {
-  id: string;
-  type: TaskType;
-  query: string;
-  context?: Record<string, any>;
-  stakes?: number;        // 0-1, importance of getting it right
-  urgencyMs?: number;     // Time constraint
-  requiredCapabilities?: EquipmentSlot[];
-  preferredEquipment?: string[];
+export interface TriggerRegistry {
+  thresholds: ThresholdConfig;
+  monitors: ThresholdMonitor[];
+  recommendations: EquipmentRecommendation[];
 }
 
-export type TaskType = 
-  | 'decision'
-  | 'analysis'
-  | 'generation'
-  | 'distillation'
-  | 'coordination'
-  | 'learning'
-  | 'visualization';
-
-export interface TaskResult {
-  taskId: string;
-  output: any;
-  confidence: number;
-  zone: ConfidenceZone;
-  equipmentUsed: EquipmentSlot[];
-  processingTimeMs: number;
-  provenance: ProvenanceChain;
-  calledTeacher: boolean;
+export interface ThresholdConfig {
+  confidence: { low: number; high: number };
+  load: { low: number; high: number };
+  complexity: { low: number; high: number };
+  memory: { low: number; high: number };
 }
 
 // ============================================
-// Spreadsheet Integration Types
-// ============================================
-
-export interface SpreadsheetTile {
-  name: string;
-  position: CellPosition;
-  type: TileType;
-  value: any;
-  confidence: number;
-  dependencies: string[];
-  formula?: string;
-}
-
-export type TileType = 
-  | 'data_origin'
-  | 'decision_logic'
-  | 'transformation'
-  | 'confidence'
-  | 'named_interface';
-
-export interface SpreadsheetState {
-  tiles: Map<string, SpreadsheetTile>;
-  origin: string;
-  lastUpdate: number;
-}
-
-// ============================================
-// Agent Configuration
+// Agent Types
 // ============================================
 
 export interface AgentConfig {
   id?: string;
-  initialEquipment?: EquipmentSlot[];
-  thresholds?: Partial<ThresholdConfig>;
-  historyMaxSize?: number;
-  spreadsheet?: {
-    enabled: boolean;
-    sheetName?: string;
-  };
-  teacherEndpoint?: string;
   debug?: boolean;
+  historyMaxSize?: number;
+  thresholds?: Partial<ThresholdConfig>;
+  teacherEndpoint?: string;
+  llmConfig?: LLMConfig;
 }
 
-// ============================================
-// Transformation Types
-// ============================================
-
-export interface TransformationMatrix {
-  data: number[][];
-  dimensions: number;
+export interface LLMConfig {
+  provider: 'openai' | 'anthropic' | 'local';
+  model: string;
+  apiKey?: string;
+  endpoint?: string;
 }
 
-export interface Transform {
+export interface OriginCore {
+  readonly id: string;
+  referenceFrame: ReferenceFrame;
+  state: OriginState;
+  history: InformationHistory;
+  rates: RateBasedUpdate;
+  equipment: Map<EquipmentSlot, Equipment>;
+  availableEquipment: Map<string, Equipment>;
+  triggers: TriggerRegistry;
+  tiles: Map<string, Tile>;
+  
+  registerEquipment(equipment: Equipment): void;
+  equip(equipmentName: string): Promise<boolean>;
+  unequipSlot(slot: EquipmentSlot): Promise<boolean>;
+  hasEquipment(slot: EquipmentSlot): boolean;
+  getEquippedEquipment(): { slot: EquipmentSlot; name: string }[];
+  processTask(task: Task): Promise<TaskResult>;
+  optimize(): Promise<void>;
+  getState(): AgentState;
+  reset(): Promise<void>;
+}
+
+export interface AgentState {
   id: string;
-  type: string;
-  input: any;
-  output: any;
-  timestamp: number;
+  equipment: EquipmentSlot[];
+  confidence: number;
+  rates: RateBasedUpdate;
 }
 
-export type StateFunction = (origin: ProvenanceChain, transforms: Transform[]) => any;
+// ============================================
+// Cell Types for Spreadsheet
+// ============================================
 
-export interface DataPayload {
-  type: string;
-  value: any;
-  schema?: TypeSchema;
-  metadata?: Record<string, any>;
+export interface Cell {
+  id: string;
+  position: [number, number];
+  value: unknown;
+  formula?: string;
+  tiles: Tile[];
+  confidence: number;
+  provenance: ProvenanceChain;
+  agent?: string;
+}
+
+export interface Spreadsheet {
+  cells: Map<string, Cell>;
+  dimensions: [number, number];
+  origin: string;
+}
+
+// ============================================
+// Network Types
+// ============================================
+
+export interface AgentNetwork {
+  agents: Map<string, OriginCore>;
+  connections: Map<string, string[]>;
+  sharedMemory: Map<string, unknown>;
+}
+
+export interface Message {
+  from: string;
+  to: string;
+  type: 'request' | 'response' | 'broadcast' | 'update';
+  payload: unknown;
+  timestamp: number;
 }
