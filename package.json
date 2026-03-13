@@ -1,46 +1,37 @@
 {
   "name": "@superinstance/starter-agent",
   "version": "1.0.0",
-  "description": "Minimal Origin-Centric agent with modular equipment system for the SuperInstance spreadsheet paradigm",
+  "description": "Minimal SuperInstance agent with origin-centric computation and modular equipment system",
   "main": "dist/index.js",
-  "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.esm.js",
-      "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    },
-    "./equipment": {
-      "import": "./dist/equipment/Equipment.js",
-      "types": "./dist/equipment/Equipment.d.ts"
-    }
-  },
-  "files": [
-    "dist",
-    "README.md",
-    "ARCHITECTURE.md"
-  ],
   "scripts": {
-    "build": "tsup src/index.ts --format cjs,esm --dts --clean",
-    "test": "bun test",
+    "build": "tsc",
+    "test": "jest",
     "lint": "eslint src --ext .ts",
-    "prepublishOnly": "npm run build"
+    "prepare": "npm run build"
   },
   "keywords": [
     "superinstance",
     "agent",
     "origin-centric",
-    "equipment-system",
+    "equipment",
     "tile-algebra",
-    "spreadsheet",
-    "polln",
-    "modular",
-    "self-optimizing",
-    "cognitive-architecture"
+    "crdt",
+    "spreadsheet"
   ],
   "author": "SuperInstance",
   "license": "MIT",
+  "dependencies": {
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/uuid": "^9.0.0",
+    "typescript": "^5.0.0",
+    "jest": "^29.0.0",
+    "@types/jest": "^29.0.0",
+    "ts-jest": "^29.0.0"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/SuperInstance/SuperInstance-Starter-Agent.git"
@@ -48,19 +39,5 @@
   "bugs": {
     "url": "https://github.com/SuperInstance/SuperInstance-Starter-Agent/issues"
   },
-  "homepage": "https://github.com/SuperInstance/SuperInstance-Starter-Agent#readme",
-  "dependencies": {
-    "@superinstance/agent-core": "^1.0.0"
-  },
-  "peerDependencies": {
-    "typescript": ">=5.0.0"
-  },
-  "devDependencies": {
-    "@types/node": "^20.10.0",
-    "tsup": "^8.0.0",
-    "typescript": "^5.3.0"
-  },
-  "engines": {
-    "node": ">=18.0.0"
-  }
+  "homepage": "https://github.com/SuperInstance/SuperInstance-Starter-Agent#readme"
 }
