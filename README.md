@@ -4,7 +4,7 @@
 
 ## Overview
 
-The SuperInstance Starter Agent is designed around a revolutionary paradigm: **agents start minimal and self-equip what they need**. Built on the mathematical foundations of Origin-Centric Data Systems and Tile Algebra, this framework enables:
+The SuperInstance Starter Agent is designed around a paradigm: **agents start minimal and self-equip what they need**. Built on the mathematical foundations of Origin-Centric Data Systems and Tile Algebra, this framework enables:
 
 - **Origin-Centric Computation**: Every operation tracks its provenance chain
 - **Modular Equipment**: Dynamically equip/unequip capabilities as needed
