@@ -1,1 +1,20 @@
-{"name":"superinstance-starter-agent","version":"1.0.0","type":"module","scripts":{"test":"vitest run"},"devDependencies":{"vitest":"^3.0.0","typescript":"^5.0.0"}}
+{
+  "name": "superinstance-starter-agent",
+  "version": "1.0.1",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "vitest": "^3.0.0",
+    "typescript": "^5.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SuperInstance/SuperInstance-Starter-Agent.git"
+  },
+  "homepage": "https://github.com/SuperInstance/SuperInstance-Starter-Agent#readme",
+  "bugs": {
+    "url": "https://github.com/SuperInstance/SuperInstance-Starter-Agent/issues"
+  }
+}
